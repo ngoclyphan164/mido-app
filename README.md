@@ -1,56 +1,61 @@
-# Welcome to your Expo app 👋
+# mido
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+React Native app built with [Expo](https://expo.dev) SDK 57 (React Native 0.86, React 19.2).
 
-## Get started
+## Stack
 
-1. Install dependencies
+|               |                                                                                                        |
+| ------------- | ------------------------------------------------------------------------------------------------------ |
+| Routing       | [Expo Router](https://docs.expo.dev/router/introduction/) — file-based, screens live in `src/app`      |
+| Language      | TypeScript (strict), path alias `@/*` → `src/*`                                                        |
+| Styling       | [NativeWind v5](https://www.nativewind.dev/v5) + Tailwind CSS 4 (CSS-first config in `src/global.css`) |
+| Server state  | [TanStack Query](https://tanstack.com/query) — client in `src/lib/query-client.ts`                     |
+| Client state  | [Zustand](https://zustand.docs.pmnd.rs) — stores in `src/store`                                        |
+| Lint / format | `eslint-config-expo` (flat config) + Prettier                                                          |
 
-   ```bash
-   npm install
-   ```
+## Requirements
 
-2. Start the app
+- **Node 24** (see `.nvmrc`) — RN 0.86 needs `>=20.19.4`, `>=22.13`, or `>=24.3`.
+  There is an x86_64 Node at `/usr/local/bin/node` on this machine. If it wins the
+  `PATH`, Metro fails with `Cannot find module '../lightningcss.darwin-x64.node'`
+  because the installed native binary is arm64. Run `nvm use` first, or remove that
+  stray install.
+- **Xcode 26.4+** for local iOS builds. Expo SDK 56 bumped the minimum, and 26.3
+  fails while compiling the `ExpoModulesJSI` xcframework
+  (`SWIFT_RETURNS_RETAINED … is not returning a SWIFT_SHARED_REFERENCE type`).
+  Until Xcode is updated, build iOS on EAS instead of locally.
+- **JDK 17** for local Android builds. This machine has JDK 18, which Gradle/AGP
+  reject. `brew install --cask zulu@17`, then point `JAVA_HOME` at it.
 
-   ```bash
-   npx expo start
-   ```
+Expo Go on the app stores tracks SDK 54, so **this project needs a development build**, not Expo Go. `npm run ios` / `npm run android` handle that.
 
-In the output, you'll find options to open the app in a
-
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
-
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
-
-## Get a fresh project
-
-When you're ready, run:
+## Commands
 
 ```bash
-npm run reset-project
+nvm use              # Node 24
+npm run start        # dev server
+npm run ios          # build + run a dev build on the iOS simulator
+npm run android      # build + run a dev build on an Android emulator
+npm run web
+npm run lint
+npm run format
+npm run typecheck
+npx expo-doctor      # verify dependency versions match the SDK
 ```
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+## Layout
 
-### Other setup steps
+```
+src/
+├── app/            # Expo Router routes — only screens and layouts here
+├── lib/            # shared clients and helpers
+└── store/          # Zustand stores
+```
 
-- To set up ESLint for linting, run `npx expo lint`, or follow our guide on ["Using ESLint and Prettier"](https://docs.expo.dev/guides/using-eslint/)
-- If you'd like to set up unit testing, follow our guide on ["Unit Testing with Jest"](https://docs.expo.dev/develop/unit-testing/)
-- Learn more about the TypeScript setup in this template in our guide on ["Using TypeScript"](https://docs.expo.dev/guides/typescript/)
+`android/` and `ios/` are gitignored: this project uses [Continuous Native Generation](https://docs.expo.dev/workflow/continuous-native-generation/). Configure native settings in `app.json` and run `npx expo prebuild --clean` rather than editing native files by hand.
 
-## Learn more
+## Styling notes
 
-To learn more about developing your project with Expo, look at the following resources:
+NativeWind v5 has no `tailwind.config.js`. Design tokens go in `src/global.css` inside an `@theme { … }` block. That file is imported once, at the top of `src/app/_layout.tsx`.
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
-
-## Join the community
-
-Join our community of developers creating universal apps.
-
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+`lightningcss` is pinned to `1.30.1` via `overrides` in `package.json` — newer versions hit a deserialization error during Metro builds. NativeWind v5 is still a preview release; if it blocks you, the fallback is NativeWind 4 with Tailwind 3.
