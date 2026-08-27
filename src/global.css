@@ -3,8 +3,58 @@
 @import 'tailwindcss/utilities.css';
 @import 'nativewind/theme';
 
-/* Customise the design tokens here, e.g.
+/* Mido design tokens — mirrors "Mido Mobile App.dc.html".
+   oklch() from the source file is pre-converted to sRGB hex because
+   React Native has no oklch parser. */
 @theme {
-  --color-brand: #208aef;
+  /* Baloo 2 = headings + buttons · Nunito = body copy */
+  --font-display: 'Baloo2_800ExtraBold';
+  --font-heading: 'Baloo2_700Bold';
+  --font-label: 'Baloo2_600SemiBold';
+  --font-body: 'Nunito_400Regular';
+  --font-body-medium: 'Nunito_500Medium';
+  --font-body-semibold: 'Nunito_600SemiBold';
+  --font-body-bold: 'Nunito_700Bold';
+
+  /* Primary */
+  --color-coral: #f0564f;
+  --color-coral-dark: #c22b44;
+  --color-peach: #ff9a7a;
+  --color-peach-light: #ff8a73;
+
+  /* Surfaces & text */
+  --color-canvas: #fff8f4;
+  --color-card: #ffffff;
+  --color-chip: #ffede7;
+  --color-ink: #2b1420;
+  --color-ink-70: rgba(43, 20, 32, 0.7);
+  --color-ink-60: rgba(43, 20, 32, 0.6);
+  --color-ink-55: rgba(43, 20, 32, 0.55);
+  --color-ink-50: rgba(43, 20, 32, 0.5);
+  --color-ink-45: rgba(43, 20, 32, 0.45);
+  --color-ink-40: rgba(43, 20, 32, 0.4);
+  --color-ink-30: rgba(43, 20, 32, 0.3);
+  --color-ink-25: rgba(43, 20, 32, 0.25);
+  --color-ink-15: rgba(43, 20, 32, 0.15);
+  --color-ink-12: rgba(43, 20, 32, 0.12);
+  --color-ink-08: rgba(43, 20, 32, 0.08);
+  --color-ink-06: rgba(43, 20, 32, 0.06);
+
+  /* Fairness / vote states */
+  --color-success: #377249;
+  --color-success-bg: #e0f5e5;
+  --color-success-strong: #1f6538;
+  --color-check-bg: #d2edd8;
+  --color-check-fg: #0a562b;
+  --color-amber: #875814;
+  --color-amber-bg: #feebd6;
+  --color-amber-text: #966626;
+  --color-amber-dot: #dea052;
+  --color-danger: #a03f3c;
+
+  /* Radius scale: 12 chip · 16 card · 24 sheet · 999 button */
+  --radius-chip: 12px;
+  --radius-card: 16px;
+  --radius-place: 18px;
+  --radius-sheet: 24px;
 }
-*/

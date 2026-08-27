@@ -43,6 +43,21 @@ npm run typecheck
 npx expo-doctor      # verify dependency versions match the SDK
 ```
 
+## Reactotron
+
+Reactotron connects automatically in native development builds and is disabled on web and in
+production. Open the Reactotron desktop app before launching Mido; network requests, global
+errors/logs and non-auth AsyncStorage mutations will then appear under the `Mido` connection.
+
+On an Android emulator or USB-connected Android device, forward Reactotron's port once before
+launching the app:
+
+```bash
+adb reverse tcp:9090 tcp:9090
+```
+
+Reactotron normally discovers the Metro host for iOS and Expo development builds automatically.
+
 ## Layout
 
 ```
