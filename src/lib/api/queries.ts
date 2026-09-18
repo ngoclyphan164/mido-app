@@ -6,11 +6,15 @@ import type {
   CompleteRequest,
   Coordinate,
   CreateHangoutRequest,
+  CreateSavedLocationRequest,
   HangoutDetail,
+  Profile,
   StoredSuggestion,
   StoredSuggestionPage,
   SuggestRequest,
   UpdateHangoutRequest,
+  UpdateProfileRequest,
+  UpdateSavedLocationRequest,
   UpsertParticipantRequest,
   VoteValue,
 } from '@/lib/api/types';
@@ -29,6 +33,10 @@ export const SUGGESTION_POOL_SIZE = 20;
 export const queryKeys = {
   health: ['health'] as const,
   me: ['auth', 'me'] as const,
+  /** Khác `me`: đây là bảng profiles, `me` là JWT vọng lại. */
+  profile: ['profiles', 'me'] as const,
+  savedLocations: ['saved-locations'] as const,
+  invitePreview: (code: string) => ['invites', code] as const,
   groups: ['groups'] as const,
   group: (groupId: string) => ['groups', groupId] as const,
   groupFairness: (groupId: string) => ['groups', groupId, 'fairness'] as const,
@@ -51,6 +59,37 @@ export function useMe(enabled = true) {
   return useQuery({
     queryKey: queryKeys.me,
     queryFn: ({ signal }) => api.me(signal),
+    enabled,
+  });
+}
+
+/**
+ * Lời mời xem trước được trước khi đăng nhập, nên hook này cố tình không phụ
+ * thuộc phiên. Mã sai/hết hạn là câu trả lời cuối cùng, không phải lỗi mạng —
+ * thử lại chỉ tốn thêm một lần chạm vào route công khai duy nhất của API.
+ */
+export function useInvitePreview(code: string | undefined) {
+  return useQuery({
+    queryKey: queryKeys.invitePreview(code ?? 'none'),
+    queryFn: ({ signal }) => api.invitePreview(code!, signal),
+    enabled: Boolean(code),
+    retry: false,
+    staleTime: 60_000,
+  });
+}
+
+export function useProfile(enabled = true) {
+  return useQuery({
+    queryKey: queryKeys.profile,
+    queryFn: ({ signal }) => api.profile(signal),
+    enabled,
+  });
+}
+
+export function useSavedLocations(enabled = true) {
+  return useQuery({
+    queryKey: queryKeys.savedLocations,
+    queryFn: ({ signal }) => api.savedLocations(signal),
     enabled,
   });
 }
@@ -161,6 +200,47 @@ export function useSearchLocations(query: string, center?: Coordinate) {
 }
 
 // ── Writes ───────────────────────────────────────────────────────────────────
+
+/**
+ * Tên hiển thị rò ra khắp nơi: `GroupDetail.members`, `GroupFairness.members`,
+ * `HangoutDetail.participants`, và cả `StoredSuggestion.travelTimes[].name`.
+ * Liệt kê từng key sẽ mục dần mỗi lần thêm màn mới, nên đổi hồ sơ thì làm mới
+ * tất cả — đây là thao tác hiếm, không phải đường nóng.
+ */
+export function useUpdateProfile() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (body: UpdateProfileRequest) => api.updateProfile(body),
+    onSuccess: (profile) => {
+      queryClient.setQueryData<Profile>(queryKeys.profile, profile);
+      void queryClient.invalidateQueries();
+    },
+  });
+}
+
+export function useCreateSavedLocation() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (body: CreateSavedLocationRequest) => api.createSavedLocation(body),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: queryKeys.savedLocations }),
+  });
+}
+
+export function useUpdateSavedLocation(locationId: string | undefined) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (body: UpdateSavedLocationRequest) => api.updateSavedLocation(locationId!, body),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: queryKeys.savedLocations }),
+  });
+}
+
+export function useDeleteSavedLocation() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (locationId: string) => api.deleteSavedLocation(locationId),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: queryKeys.savedLocations }),
+  });
+}
 
 export function useCreateGroup() {
   const queryClient = useQueryClient();

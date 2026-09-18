@@ -45,3 +45,5 @@ example
 /android
 
 .apple-credentials
+# Vercel link metadata for site/
+.vercel

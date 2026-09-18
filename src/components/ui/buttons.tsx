@@ -1,4 +1,5 @@
 import { LinearGradient } from 'expo-linear-gradient';
+import type { ReactNode } from 'react';
 import { Pressable, Text, View } from 'react-native';
 
 import { cn } from '@/lib/cn';
@@ -82,6 +83,38 @@ export function OutlineButton({
       >
         {label}
       </Text>
+    </Pressable>
+  );
+}
+
+/**
+ * Nút đăng nhập bên thứ ba: viền trung tính, logo bên trái, nhãn căn giữa.
+ *
+ * Logo nằm tuyệt đối chứ không nằm trong flex row, để nhãn luôn căn giữa nút dù
+ * "Google" và "Apple" dài ngắn khác nhau — xếp hàng ngang thì hai nút lệch nhau
+ * thấy rõ khi đứng cạnh.
+ */
+export function SocialButton({
+  label,
+  icon,
+  onPress,
+  disabled,
+  className,
+}: Omit<ButtonProps, 'compact'> & { icon: ReactNode }) {
+  return (
+    <Pressable
+      accessibilityRole="button"
+      accessibilityState={{ disabled: Boolean(disabled) }}
+      className={cn(
+        'h-[50px] flex-row items-center justify-center rounded-full border-[1.5px] border-ink-15 bg-card',
+        disabled ? 'opacity-40' : 'active:opacity-70',
+        className,
+      )}
+      disabled={disabled}
+      onPress={onPress}
+    >
+      <View className="absolute left-5">{icon}</View>
+      <Text className="font-heading text-[14.5px] text-ink">{label}</Text>
     </Pressable>
   );
 }

@@ -2,6 +2,7 @@ import { useRouter } from 'expo-router';
 import { useState } from 'react';
 import { ScrollView, View } from 'react-native';
 
+import { AuthDivider, SocialAuthButtons } from '@/components/social-auth';
 import { PrimaryButton } from '@/components/ui/buttons';
 import { AuthSwitch, Checkbox, LabeledInput } from '@/components/ui/form';
 import { Screen, ScreenHeader } from '@/components/ui/screen';
@@ -61,7 +62,12 @@ export default function SignUp() {
       <ScreenHeader onBack={() => router.replace('/sign-in')} title="Tạo tài khoản" />
 
       <ScrollView className="flex-1" keyboardShouldPersistTaps="handled">
-        <View className="gap-3.5 px-7 pt-[26px]">
+        <View className="gap-4 px-7 pt-[26px]">
+          <SocialAuthButtons />
+          <AuthDivider />
+        </View>
+
+        <View className="gap-3.5 px-7 pt-5">
           <LabeledInput
             autoCapitalize="words"
             label="Tên hiển thị"

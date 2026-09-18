@@ -1,19 +1,18 @@
-import * as Clipboard from 'expo-clipboard';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useState } from 'react';
-import { Pressable, ScrollView, Text, View } from 'react-native';
+import { ScrollView, Text, View } from 'react-native';
 
 import { Avatar } from '@/components/ui/avatar';
 import { PrimaryButton } from '@/components/ui/buttons';
 import { SegmentedControl } from '@/components/ui/controls';
 import { LabeledInput } from '@/components/ui/form';
+import { InviteShare } from '@/components/ui/invite-share';
 import { Screen, ScreenHeader } from '@/components/ui/screen';
 import { ErrorState } from '@/components/ui/states';
-import { Card, FieldLabel, MonoText } from '@/components/ui/typography';
+import { FieldLabel } from '@/components/ui/typography';
 import { hueIndexFor, initialOf } from '@/lib/api/present';
 import { useCreateGroup, useJoinGroup } from '@/lib/api/queries';
 import type { CreateGroupResponse } from '@/lib/api/types';
-import { SHADOWS } from '@/theme/tokens';
 
 export default function NewGroup() {
   const router = useRouter();
@@ -22,21 +21,12 @@ export default function NewGroup() {
   const [mode, setMode] = useState(tab === 'join' ? 1 : 0);
   const [name, setName] = useState('');
   const [code, setCode] = useState('');
-  const [copied, setCopied] = useState(false);
   /** The API returns the raw invite code exactly once, on create. */
   const [created, setCreated] = useState<CreateGroupResponse | null>(null);
 
   const createGroup = useCreateGroup();
   const joinGroup = useJoinGroup();
   const joining = mode === 1;
-
-  const inviteUrl = created ? `mido.app/join/${created.inviteCode}` : null;
-
-  async function copyInvite() {
-    if (!inviteUrl) return;
-    await Clipboard.setStringAsync(`https://${inviteUrl}`);
-    setCopied(true);
-  }
 
   function submit() {
     if (joining) {
@@ -122,24 +112,10 @@ export default function NewGroup() {
 
                 <View className="gap-2 px-5 pt-6">
                   <FieldLabel>Mời bạn bè</FieldLabel>
-                  <Card
-                    className="flex-row items-center justify-between px-4 py-3.5"
-                    style={SHADOWS.field}
-                  >
-                    <MonoText className="text-[14px] text-ink">{inviteUrl ?? ''}</MonoText>
-                    <Pressable
-                      accessibilityRole="button"
-                      className="active:opacity-60"
-                      onPress={copyInvite}
-                    >
-                      <Text className="font-body-bold text-[12.5px] text-coral">
-                        {copied ? 'Đã sao chép' : 'Sao chép'}
-                      </Text>
-                    </Pressable>
-                  </Card>
+                  <InviteShare code={created.inviteCode} groupName={created.group.name} />
                   <Text className="font-body text-[13px] leading-[20px] text-ink-55">
-                    Lưu link này lại: server chỉ giữ bản hash nên mã cũ không đọc lại được, muốn
-                    hiện lại phải tạo mã mới.
+                    Chia sẻ ngay bây giờ: server chỉ giữ bản hash nên mã này không đọc lại được,
+                    muốn hiện lại phải tạo mã mới.
                   </Text>
                 </View>
               </>

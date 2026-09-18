@@ -1,4 +1,3 @@
-import * as Clipboard from 'expo-clipboard';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useState } from 'react';
 import { Pressable, ScrollView, Text, View } from 'react-native';
@@ -7,15 +6,18 @@ import { Avatar } from '@/components/ui/avatar';
 import { PrimaryButton } from '@/components/ui/buttons';
 import { SegmentedControl, StatusPill } from '@/components/ui/controls';
 import { ChevronRight, MoreDots } from '@/components/ui/icons';
+import { InviteShare } from '@/components/ui/invite-share';
 import { ListGroup } from '@/components/ui/list-group';
 import { useRefreshControl } from '@/components/ui/refresh';
 import { Screen, ScreenHeader } from '@/components/ui/screen';
 import { EmptyState, ErrorState, LoadingState } from '@/components/ui/states';
-import { Card, FieldLabel, MonoText, SectionTitle } from '@/components/ui/typography';
+import { Card, FieldLabel, SectionTitle } from '@/components/ui/typography';
 import {
   activityLabel,
   fairnessBalance,
+  formatDayDate,
   formatShortDate,
+  formatTime,
   hangoutRoute,
   hangoutStatusLabel,
   hueIndexFor,
@@ -30,7 +32,6 @@ export default function GroupDetail() {
   const { groupId } = useLocalSearchParams<{ groupId: string }>();
   // The design shows the fairness ledger selected.
   const [tab, setTab] = useState(1);
-  const [inviteCopied, setInviteCopied] = useState(false);
 
   const group = useGroup(groupId);
   const fairness = useGroupFairness(groupId);
@@ -39,12 +40,6 @@ export default function GroupDetail() {
 
   const canManageInvite = group.data?.role === 'owner' || group.data?.role === 'admin';
   const inviteCode = rotateInvite.data?.inviteCode;
-
-  async function copyInviteCode() {
-    if (!inviteCode) return;
-    const copied = await Clipboard.setStringAsync(inviteCode);
-    setInviteCopied(copied);
-  }
 
   const refreshControl = useRefreshControl([group, fairness, hangouts]);
 
@@ -108,29 +103,11 @@ export default function GroupDetail() {
 
               {rotateInvite.data ? (
                 <>
-                  <View className="flex-row items-center justify-between rounded-[14px] bg-canvas px-4 py-3.5">
-                    <MonoText className="text-[18px] text-ink">
-                      {rotateInvite.data.inviteCode}
-                    </MonoText>
-                    <Pressable
-                      accessibilityRole="button"
-                      className="active:opacity-60"
-                      onPress={() => void copyInviteCode()}
-                    >
-                      <Text className="font-body-bold text-[12.5px] text-coral">
-                        {inviteCopied ? 'Đã sao chép' : 'Sao chép'}
-                      </Text>
-                    </Pressable>
-                  </View>
+                  <InviteShare code={rotateInvite.data.inviteCode} groupName={group.data.name} />
                   <Text className="font-body text-[11.5px] text-ink-45">
-                    Hết hạn lúc{' '}
-                    {new Intl.DateTimeFormat('vi-VN', {
-                      day: '2-digit',
-                      month: '2-digit',
-                      year: 'numeric',
-                      hour: '2-digit',
-                      minute: '2-digit',
-                    }).format(new Date(rotateInvite.data.inviteExpiresAt))}
+                    {`Hết hạn ${formatDayDate(rotateInvite.data.inviteExpiresAt)} lúc ${formatTime(
+                      rotateInvite.data.inviteExpiresAt,
+                    )}`}
                   </Text>
                 </>
               ) : canManageInvite ? (
@@ -139,10 +116,7 @@ export default function GroupDetail() {
                   accessibilityState={{ disabled: rotateInvite.isPending }}
                   className="items-center rounded-full bg-coral-soft py-3 active:opacity-70 disabled:opacity-50"
                   disabled={rotateInvite.isPending}
-                  onPress={() => {
-                    setInviteCopied(false);
-                    rotateInvite.mutate(undefined);
-                  }}
+                  onPress={() => rotateInvite.mutate(undefined)}
                 >
                   <Text className="font-heading text-[13.5px] text-coral-dark">
                     {rotateInvite.isPending ? 'Đang tạo mã…' : 'Tạo mã mời mới'}

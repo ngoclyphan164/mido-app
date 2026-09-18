@@ -5,6 +5,7 @@ import type {
   CompleteResponse,
   CreateGroupResponse,
   CreateHangoutRequest,
+  CreateSavedLocationRequest,
   DecideResponse,
   Group,
   GroupDetail,
@@ -12,11 +13,14 @@ import type {
   HangoutDetail,
   HangoutSummary,
   HealthResponse,
+  InvitePreview,
   JoinGroupResponse,
   MidpointParticipantInput,
   MidpointPreview,
   Participant,
+  Profile,
   RotateInviteResponse,
+  SavedLocation,
   SearchLocationsRequest,
   SearchLocationsResponse,
   SuggestRequest,
@@ -24,6 +28,8 @@ import type {
   StoredSuggestionPage,
   SuggestResponse,
   UpdateHangoutRequest,
+  UpdateProfileRequest,
+  UpdateSavedLocationRequest,
   UpsertParticipantRequest,
   VoteResponse,
   VoteValue,
@@ -127,6 +133,39 @@ export const api = {
 
   /** Permanently removes the current Supabase user and all associated Mido data. 204. */
   deleteAccount: (signal?: AbortSignal) => request<null>('/auth/me', { method: 'DELETE', signal }),
+
+  /**
+   * Xem trước lời mời trước khi đăng nhập. Route công khai, nên gọi được ngay
+   * cả khi chưa có token — `request` bỏ qua header Authorization khi không có.
+   */
+  invitePreview: (code: string, signal?: AbortSignal) =>
+    request<InvitePreview>(`/invites/${encodeURIComponent(code)}`, { signal }),
+
+  // ── Profile ───────────────────────────────────────────────────────────────
+
+  /** Khác `me()`: đây đọc bảng profiles, còn `me()` chỉ vọng lại JWT. */
+  profile: (signal?: AbortSignal) => request<Profile>('/profiles/me', { signal }),
+
+  updateProfile: (body: UpdateProfileRequest, signal?: AbortSignal) =>
+    request<Profile>('/profiles/me', { method: 'PATCH', body, signal }),
+
+  // ── Saved locations ───────────────────────────────────────────────────────
+
+  savedLocations: (signal?: AbortSignal) =>
+    request<SavedLocation[]>('/saved-locations', { signal }),
+
+  createSavedLocation: (body: CreateSavedLocationRequest, signal?: AbortSignal) =>
+    request<SavedLocation>('/saved-locations', { method: 'POST', body, signal }),
+
+  updateSavedLocation: (
+    locationId: string,
+    body: UpdateSavedLocationRequest,
+    signal?: AbortSignal,
+  ) => request<SavedLocation>(`/saved-locations/${locationId}`, { method: 'PATCH', body, signal }),
+
+  /** 204. Trả 404 khi không sở hữu — API không bao giờ xác nhận id của người khác. */
+  deleteSavedLocation: (locationId: string, signal?: AbortSignal) =>
+    request<null>(`/saved-locations/${locationId}`, { method: 'DELETE', signal }),
 
   // ── Groups ────────────────────────────────────────────────────────────────
 

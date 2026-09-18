@@ -1,6 +1,6 @@
 import * as Location from 'expo-location';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { ActivityIndicator, Platform, Pressable, ScrollView, Text, View } from 'react-native';
 
 import { Avatar } from '@/components/ui/avatar';
@@ -22,7 +22,7 @@ import {
   useParticipantsRealtime,
   useSetOwnParticipant,
 } from '@/lib/api/queries';
-import type { Coordinate, Participant, SearchLocationPlace } from '@/lib/api/types';
+import type { Coordinate, Participant, SavedLocation, SearchLocationPlace } from '@/lib/api/types';
 import { TRAVEL_MODE_LABELS } from '@/lib/api/types';
 import { TRAVEL_MODES } from '@/lib/ui-config';
 import { useHangoutStore } from '@/store/use-hangout-store';
@@ -156,6 +156,14 @@ export default function Locations() {
   const myParticipant = hangout.data?.participants.find((p) => p.userId === myUserId);
   // A manually picked point wins over the GPS default for the rest of this visit.
   const [pickedCoord, setPickedCoord] = useState<{ lat: number; lng: number } | null>(null);
+  /** Bật lên khi người dùng tự chọn điểm; xem chú thích trong effect lấy GPS. */
+  const pickedRef = useRef(false);
+  /**
+   * Chỉ có giá trị khi điểm đang chọn đến thẳng từ một địa điểm đã lưu và chưa
+   * bị kéo đi đâu. Mọi cách chọn khác đều xoá nó — id cũ đi kèm toạ độ mới là
+   * đúng kiểu lỗi ghi âm thầm sai dữ liệu.
+   */
+  const [pickedSavedLocationId, setPickedSavedLocationId] = useState<string | null>(null);
   const [currentCoord, setCurrentCoord] = useState<{ lat: number; lng: number } | null>(null);
   const [isLocating, setIsLocating] = useState(true);
   const [isResolvingAddress, setIsResolvingAddress] = useState(false);
@@ -173,12 +181,15 @@ export default function Locations() {
     async function loadCurrentLocation() {
       try {
         const current = await getDeviceCurrentCoordinate();
-        if (!cancelled) {
-          setCurrentCoord(current);
-          setSelectedLocationLabel('Vị trí hiện tại');
-        }
+        // GPS và geocode ngược mất vài giây; trong khoảng đó người dùng có thể đã
+        // chạm một địa điểm đã lưu hoặc một kết quả tìm kiếm. `pickedCoord` vốn
+        // thắng ở dòng `coord`, nhưng nhãn và địa chỉ thì không — không có
+        // `pickedRef` thì hai setter dưới đây đè lên lựa chọn vừa xong.
+        if (!cancelled) setCurrentCoord(current);
+        if (!cancelled && !pickedRef.current) setSelectedLocationLabel('Vị trí hiện tại');
+
         const address = await reverseGeocodeCoordinate(current);
-        if (!cancelled && address) {
+        if (!cancelled && address && !pickedRef.current) {
           setSelectedLocationLabel(address);
           setSelectedOriginAddress(address);
         }
@@ -202,7 +213,27 @@ export default function Locations() {
 
   function selectSearchResult(place: SearchLocationPlace) {
     const address = (place.address?.trim() || place.name.trim()).slice(0, 512);
+    pickedRef.current = true;
+    setPickedSavedLocationId(null);
     setPickedCoord(place.location);
+    setSelectedLocationLabel(address);
+    setSelectedOriginAddress(address);
+    setLocationError(null);
+  }
+
+  /**
+   * Địa điểm đã lưu đi đúng code path của một kết quả tìm kiếm: nó cũng chỉ là
+   * một toạ độ kèm địa chỉ, và `pickedCoord` vốn đã thắng mọi nguồn khác.
+   *
+   * Cố ý KHÔNG đụng tới chuỗi fallback ở đầu màn (`pickedCoord ?? currentCoord ??
+   * myParticipant?.origin`): nó ưu tiên GPS tươi vì câu hỏi là lần này bạn xuất
+   * phát từ đâu. Địa điểm đã lưu là một lời mời, không phải liên kết tự động.
+   */
+  function selectSavedLocation(location: SavedLocation) {
+    const address = location.address?.trim() || location.label.trim();
+    pickedRef.current = true;
+    setPickedSavedLocationId(location.id);
+    setPickedCoord(location.location);
     setSelectedLocationLabel(address);
     setSelectedOriginAddress(address);
     setLocationError(null);
@@ -214,6 +245,9 @@ export default function Locations() {
 
     try {
       const current = await getDeviceCurrentCoordinate();
+      // Bấm "dùng vị trí hiện tại" là cố ý quay về GPS, nên nhả chốt.
+      pickedRef.current = false;
+      setPickedSavedLocationId(null);
       setCurrentCoord(current);
       setPickedCoord(null);
       setSelectedLocationLabel('Vị trí hiện tại');
@@ -230,6 +264,8 @@ export default function Locations() {
   }
 
   function pickCoordOnMap(nextCoord: { lat: number; lng: number }) {
+    pickedRef.current = true;
+    setPickedSavedLocationId(null);
     setPickedCoord(nextCoord);
     setSelectedLocationLabel(undefined);
     setSelectedOriginAddress(undefined);
@@ -255,9 +291,12 @@ export default function Locations() {
 
       setSelectedOriginAddress(originAddress);
       setSelectedLocationLabel(originAddress);
+      // Gửi id khi điểm đến từ một địa điểm đã lưu: API tự lấy toạ độ và địa chỉ
+      // từ bản ghi, nên hai bên không bao giờ lệch nhau.
       await saveParticipant.mutateAsync({
-        lat: coord.lat,
-        lng: coord.lng,
+        ...(pickedSavedLocationId
+          ? { savedLocationId: pickedSavedLocationId }
+          : { lat: coord.lat, lng: coord.lng }),
         originAddress,
         travelMode: TRAVEL_MODES[travelModeIndex].value,
       });
@@ -399,7 +438,9 @@ export default function Locations() {
             center={searchCenter}
             currentLocationError={locationError}
             isLocating={isLocating}
+            enableSaved
             onSelect={selectSearchResult}
+            onSelectSaved={selectSavedLocation}
             onUseCurrentLocation={handleCurrentLocation}
             selectedLabel={selectedLocationLabel}
           />

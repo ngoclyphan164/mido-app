@@ -16,10 +16,15 @@ import { HAS_SUPABASE_CONFIG, SUPABASE_ANON_KEY, SUPABASE_URL } from '@/lib/env'
 let cached: SupabaseClient | null | undefined;
 
 /**
- * Auth lives entirely on the client: the app signs in anonymously against
- * Supabase and sends the resulting access token to mido-api, which verifies it
- * via JWKS. Guests are real Supabase users, so a `profiles` row (and therefore
- * group membership and votes) is created for them by a DB trigger.
+ * Auth lives entirely on the client: the app gets a Supabase session — anonymous
+ * for guests, or email/Google/Apple for registered users — and sends the access
+ * token to mido-api, which verifies it via JWKS. Guests are real Supabase users,
+ * so a `profiles` row (and therefore group membership and votes) is created for
+ * them by a DB trigger, and linking an identity later keeps the same
+ * `auth.users.id` — which is why none of their data is lost on upgrade.
+ *
+ * Phiên khách chỉ được tạo khi người dùng chủ động bấm, hoặc khi họ mở link mời:
+ * xem `signInAsGuest` trong `src/lib/auth.tsx`.
  *
  * Returns null when the Supabase variables are absent, so the app can boot and
  * show a clear message instead of throwing.

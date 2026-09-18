@@ -1,3 +1,4 @@
+import { Image } from 'expo-image';
 import { Text, View } from 'react-native';
 
 import { cn } from '@/lib/cn';
@@ -8,12 +9,18 @@ const FONT_RATIO = 0.39;
 /**
  * Member avatar: a hue-shifted disc with the member's initial. Hues stay at a
  * fixed lightness/chroma so every avatar reads at the same weight.
+ *
+ * `uri` swaps the initial for a photo. Keeping it here rather than in a separate
+ * component means every avatar site in the app shows photos without touching a
+ * single call site — and the coloured disc stays underneath as the placeholder
+ * while the image loads, so nothing jumps.
  */
 export function Avatar({
   initial,
   hueIndex,
   size = 36,
   ring = false,
+  uri,
   className,
 }: {
   initial: string;
@@ -21,13 +28,15 @@ export function Avatar({
   size?: number;
   /** White 2px ring, for the overlapping stack in the vote footer. */
   ring?: boolean;
+  /** Ảnh đại diện; bỏ trống thì hiện chữ cái đầu. */
+  uri?: string | null;
   className?: string;
 }) {
   const { bg, fg } = avatarColors(hueIndex);
 
   return (
     <View
-      className={cn('items-center justify-center rounded-full', className)}
+      className={cn('items-center justify-center overflow-hidden rounded-full', className)}
       style={{
         width: size,
         height: size,
@@ -35,12 +44,22 @@ export function Avatar({
         ...(ring ? { borderWidth: 2, borderColor: '#FFFFFF' } : null),
       }}
     >
-      <Text
-        className="font-heading"
-        style={{ color: fg, fontSize: Math.round(size * FONT_RATIO * 10) / 10 }}
-      >
-        {initial}
-      </Text>
+      {uri ? (
+        <Image
+          accessibilityIgnoresInvertColors
+          contentFit="cover"
+          source={{ uri }}
+          style={{ width: '100%', height: '100%' }}
+          transition={150}
+        />
+      ) : (
+        <Text
+          className="font-heading"
+          style={{ color: fg, fontSize: Math.round(size * FONT_RATIO * 10) / 10 }}
+        >
+          {initial}
+        </Text>
+      )}
     </View>
   );
 }

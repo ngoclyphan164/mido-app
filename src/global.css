@@ -21,6 +21,8 @@
   --color-coral-dark: #c22b44;
   --color-peach: #ff9a7a;
   --color-peach-light: #ff8a73;
+  /* Tinted fill behind coral/coral-dark content — one step deeper than chip. */
+  --color-coral-soft: #ffe1d9;
 
   /* Surfaces & text */
   --color-canvas: #fff8f4;

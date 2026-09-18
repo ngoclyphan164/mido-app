@@ -7,9 +7,16 @@
     "icon": "./assets/images/icon.png",
     "scheme": "mido",
     "userInterfaceStyle": "light",
+    "updates": {
+      "url": "https://u.expo.dev/29e63ef3-1352-4aef-b705-ed9839182fad"
+    },
+    "runtimeVersion": {
+      "policy": "fingerprint"
+    },
     "ios": {
       "icon": "./assets/images/icon.png",
       "bundleIdentifier": "com.linhtuti.mido.app",
+      "usesAppleSignIn": true,
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false
       }
@@ -28,6 +35,13 @@
     },
     "plugins": [
       "expo-router",
+      "expo-apple-authentication",
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "Cho phép Mido dùng ảnh của bạn để đặt ảnh đại diện."
+        }
+      ],
       [
         "expo-splash-screen",
         {

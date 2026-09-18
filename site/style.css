@@ -1,0 +1,233 @@
+/* Bảng màu và chữ lấy nguyên từ src/global.css và src/theme/tokens.ts của app,
+   để trang web và app trông như một. Đổi bên nào thì sửa cả hai. */
+:root {
+  --coral: #f0564f;
+  --coral-dark: #c22b44;
+  --peach: #ff8a73;
+  --coral-soft: #ffe1d9;
+  --canvas: #fff8f4;
+  --card: #ffffff;
+  --ink: #2b1420;
+  --ink-70: rgba(43, 20, 32, 0.7);
+  --ink-55: rgba(43, 20, 32, 0.55);
+  --ink-40: rgba(43, 20, 32, 0.4);
+  --ink-12: rgba(43, 20, 32, 0.12);
+  --shadow-card: 0 4px 14px rgba(43, 20, 32, 0.06);
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--canvas);
+  color: var(--ink);
+  font-family:
+    'Nunito',
+    system-ui,
+    -apple-system,
+    'Segoe UI',
+    sans-serif;
+  font-size: 16px;
+  line-height: 1.65;
+  -webkit-font-smoothing: antialiased;
+}
+
+h1,
+h2,
+h3,
+.brand-name {
+  font-family: 'Baloo 2', 'Nunito', system-ui, sans-serif;
+  font-weight: 700;
+  line-height: 1.25;
+  letter-spacing: -0.01em;
+}
+
+a {
+  color: var(--coral-dark);
+  text-underline-offset: 3px;
+}
+
+.wrap {
+  max-width: 640px;
+  margin: 0 auto;
+  padding: 0 24px;
+}
+
+/* ── Header ─────────────────────────────────────────────────────────────── */
+/* Chính là file đã nạp lên Google OAuth consent screen. Brand verification đối
+   chiếu logo ở đó với logo trên trang chủ, nên hai bên phải là một ảnh. */
+.mark {
+  width: 56px;
+  height: 56px;
+  border-radius: 14px;
+  box-shadow: 0 8px 20px rgba(240, 86, 79, 0.28);
+  display: block;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 44px 0 0;
+}
+
+.brand-name {
+  font-size: 26px;
+  margin: 0;
+}
+
+.brand-tag {
+  margin: 2px 0 0;
+  font-size: 14px;
+  color: var(--ink-55);
+}
+
+/* ── Hero ───────────────────────────────────────────────────────────────── */
+.hero h1 {
+  font-size: clamp(30px, 7vw, 42px);
+  margin: 40px 0 0;
+}
+
+.hero p.lead {
+  font-size: 17px;
+  color: var(--ink-70);
+  margin: 16px 0 0;
+}
+
+ul.points {
+  list-style: none;
+  margin: 32px 0 0;
+  padding: 0;
+  display: grid;
+  gap: 14px;
+}
+
+ul.points li {
+  position: relative;
+  padding-left: 20px;
+  color: var(--ink-70);
+}
+
+ul.points li::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 11px;
+  width: 7px;
+  height: 7px;
+  border-radius: 999px;
+  background: var(--coral);
+}
+
+.card {
+  background: var(--card);
+  border-radius: 16px;
+  box-shadow: var(--shadow-card);
+  padding: 20px 22px;
+  margin: 36px 0 0;
+}
+
+.card h2 {
+  font-size: 17px;
+  margin: 0 0 6px;
+}
+
+.card p {
+  margin: 0;
+  font-size: 14.5px;
+  color: var(--ink-55);
+}
+
+/* ── Prose (privacy page) ───────────────────────────────────────────────── */
+.prose h1 {
+  font-size: clamp(27px, 6vw, 34px);
+  margin: 40px 0 8px;
+}
+
+.prose .updated {
+  color: var(--ink-40);
+  font-size: 14px;
+  margin: 0 0 8px;
+}
+
+.prose h2 {
+  font-size: 19px;
+  margin: 40px 0 10px;
+}
+
+.prose p,
+.prose li {
+  color: var(--ink-70);
+  font-size: 15.5px;
+}
+
+.prose ul {
+  padding-left: 20px;
+  display: grid;
+  gap: 8px;
+}
+
+.prose table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 16px 0 0;
+  font-size: 14.5px;
+}
+
+.prose th,
+.prose td {
+  text-align: left;
+  vertical-align: top;
+  padding: 10px 12px 10px 0;
+  border-bottom: 1px solid var(--ink-12);
+  color: var(--ink-70);
+}
+
+.prose th {
+  font-family: 'Baloo 2', sans-serif;
+  font-weight: 600;
+  color: var(--ink);
+  white-space: nowrap;
+}
+
+/* ── Footer ─────────────────────────────────────────────────────────────── */
+footer {
+  margin: 64px 0 0;
+  padding: 28px 0 48px;
+  border-top: 1px solid var(--ink-12);
+  font-size: 14px;
+  color: var(--ink-40);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 20px;
+  align-items: baseline;
+}
+
+footer a {
+  color: var(--ink-55);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --canvas: #1a0e15;
+    --card: #241520;
+    --ink: #fdf4f0;
+    --ink-70: rgba(253, 244, 240, 0.72);
+    --ink-55: rgba(253, 244, 240, 0.58);
+    --ink-40: rgba(253, 244, 240, 0.42);
+    --ink-12: rgba(253, 244, 240, 0.14);
+    --shadow-card: 0 4px 14px rgba(0, 0, 0, 0.3);
+  }
+
+  a {
+    color: var(--peach);
+  }
+}

@@ -92,6 +92,47 @@ export function MidoMark({ color = '#FFFFFF', size = 38 }: IconProps) {
  * placeholders. Rendered as an SVG pattern since React Native has no
  * repeating gradient.
  */
+/**
+ * Logo "G" bốn màu của Google, đúng bảng màu thương hiệu.
+ *
+ * Nguyên tắc nhận diện của Google cấm tô lại logo theo màu app, nên bốn mã màu
+ * dưới đây là cố định và không lấy từ `tokens.ts`.
+ */
+export function GoogleIcon({ size = 18 }: Pick<IconProps, 'size'>) {
+  return (
+    <Svg height={size} viewBox="0 0 48 48" width={size}>
+      <Path
+        d="M45.12 24.5c0-1.56-.14-3.06-.4-4.5H24v8.51h11.84c-.51 2.75-2.06 5.08-4.39 6.64v5.52h7.11c4.16-3.83 6.56-9.47 6.56-16.17z"
+        fill="#4285F4"
+      />
+      <Path
+        d="M24 46c5.94 0 10.92-1.97 14.56-5.33l-7.11-5.52c-1.97 1.32-4.49 2.1-7.45 2.1-5.73 0-10.58-3.87-12.31-9.07H4.34v5.7C7.96 41.07 15.4 46 24 46z"
+        fill="#34A853"
+      />
+      <Path
+        d="M11.69 28.18c-.44-1.32-.69-2.73-.69-4.18s.25-2.86.69-4.18v-5.7H4.34A21.99 21.99 0 0 0 2 24c0 3.55.85 6.91 2.34 9.88l7.35-5.7z"
+        fill="#FBBC05"
+      />
+      <Path
+        d="M24 10.75c3.23 0 6.13 1.11 8.41 3.29l6.31-6.31C34.91 4.18 29.93 2 24 2 15.4 2 7.96 6.93 4.34 14.12l7.35 5.7c1.73-5.2 6.58-9.07 12.31-9.07z"
+        fill="#EA4335"
+      />
+    </Svg>
+  );
+}
+
+/** Quả táo đặc, dùng trên nút "Tiếp tục với Apple". */
+export function AppleIcon({ color = '#2B1420', size = 18 }: IconProps) {
+  return (
+    <Svg height={size} viewBox="0 0 24 24" width={size}>
+      <Path
+        d="M16.37 12.78c.02 2.56 2.24 3.41 2.27 3.42-.02.06-.36 1.23-1.18 2.44-.71 1.04-1.45 2.08-2.62 2.1-1.15.02-1.52-.68-2.83-.68s-1.72.66-2.81.7c-1.13.04-1.99-1.13-2.7-2.17-1.46-2.12-2.57-5.99-1.08-8.6.74-1.3 2.07-2.12 3.51-2.14 1.11-.02 2.15.75 2.83.75.68 0 1.95-.93 3.28-.79.56.02 2.13.23 3.14 1.7-.08.05-1.87 1.1-1.85 3.27M14.22 4.6c.6-.73 1.01-1.75.9-2.76-.87.04-1.92.58-2.55 1.31-.56.64-1.05 1.68-.92 2.67.97.08 1.96-.49 2.57-1.22"
+        fill={color}
+      />
+    </Svg>
+  );
+}
+
 export function HatchFill({ stripe = 6 }: { stripe?: number }) {
   const id = `hatch-${useId()}`;
   const tile = stripe * 2;

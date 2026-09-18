@@ -4,18 +4,22 @@ import { useState } from 'react';
 import { Pressable, ScrollView, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import { AuthDivider, SocialAuthButtons } from '@/components/social-auth';
 import { PrimaryButton } from '@/components/ui/buttons';
 import { AuthSwitch, LabeledInput } from '@/components/ui/form';
 import { MidoMark } from '@/components/ui/icons';
 import { Screen } from '@/components/ui/screen';
 import { ErrorState } from '@/components/ui/states';
 import { useSession } from '@/lib/auth';
+import { usePendingInvite } from '@/store/use-pending-invite';
 import { DIAGONAL, GRADIENTS, SHADOWS } from '@/theme/tokens';
 
 export default function SignIn() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const { signIn } = useSession();
+  // Cho biết vì sao họ bị đưa tới đây, thay vì một lần chuyển hướng bí ẩn.
+  const pendingInvite = usePendingInvite((state) => state.code);
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -63,9 +67,21 @@ export default function SignIn() {
           <Text className="mt-1.5 font-body text-[14px] text-ink-55">
             Đăng nhập để xem kèo của nhóm bạn
           </Text>
+          {pendingInvite ? (
+            <Text className="mt-2.5 font-body-bold text-[13px] text-coral">
+              Đăng nhập để vào nhóm bạn được mời
+            </Text>
+          ) : null}
         </View>
 
-        <View className="gap-3.5 px-7 pt-7">
+        {/* Social đứng trên form: đó là đường ít ma sát nhất, và người đã quen
+            đăng nhập bằng Google không phải đọc lướt qua hai ô nhập trước. */}
+        <View className="gap-4 px-7 pt-7">
+          <SocialAuthButtons />
+          <AuthDivider />
+        </View>
+
+        <View className="gap-3.5 px-7 pt-5">
           <LabeledInput
             autoCapitalize="none"
             autoComplete="email"
@@ -98,7 +114,11 @@ export default function SignIn() {
             value={password}
           />
           <View className="items-end">
-            <Pressable accessibilityRole="link" className="active:opacity-60">
+            <Pressable
+              accessibilityRole="link"
+              className="active:opacity-60"
+              onPress={() => router.push('/forgot-password')}
+            >
               <Text className="font-body-bold text-[13px] text-coral">Quên mật khẩu?</Text>
             </Pressable>
           </View>

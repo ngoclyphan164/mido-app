@@ -46,6 +46,17 @@ export default function Confirmed() {
 
   const values = Object.keys(minutes).length > 0 ? minutes : seeded;
 
+  /**
+   * `seeded` only covers whoever was a participant when `/suggest` last ran, so
+   * anyone who joined afterwards has no starting number. Submitting them as 0
+   * would be accepted by the API — 0 is a valid duration — and would quietly
+   * skew every other member's debt, because the ledger's deltas are measured
+   * against the group mean. Name them instead and block the write.
+   */
+  const unseeded = (detail?.participants ?? []).filter(
+    (participant) => !(values[participant.id] > 0),
+  );
+
   function bump(participantId: string, delta: number) {
     setMinutes({
       ...values,
@@ -154,8 +165,12 @@ export default function Confirmed() {
                     >
                       <Text className="font-body-bold text-[15px] text-coral-dark">−</Text>
                     </Pressable>
-                    <Text className="w-16 text-center font-body-bold text-[13px] text-ink">
-                      {values[participant.id] ?? 0} phút
+                    <Text
+                      className={`w-16 text-center font-body-bold text-[13px] ${
+                        values[participant.id] > 0 ? 'text-ink' : 'text-coral'
+                      }`}
+                    >
+                      {values[participant.id] > 0 ? `${values[participant.id]} phút` : 'chưa có'}
                     </Text>
                     <Pressable
                       accessibilityLabel="Tăng"
@@ -192,6 +207,13 @@ export default function Confirmed() {
               chỉ số thực tế mới được vào sổ công bằng.
             </Text>
           ) : null}
+          {editing && unseeded.length > 0 ? (
+            <Text className="mt-2 font-body text-[12px] leading-[18px] text-coral-dark">
+              {`Chưa có số phút của ${unseeded
+                .map((participant) => participant.displayName)
+                .join(', ')}. Nhập trước khi ghi sổ, ghi 0 phút sẽ làm lệch sổ của cả nhóm.`}
+            </Text>
+          ) : null}
           {complete.error ? <ErrorState error={complete.error} /> : null}
         </View>
       </ScrollView>
@@ -206,7 +228,7 @@ export default function Confirmed() {
           <>
             <OutlineButton label="Huỷ" onPress={() => setEditing(false)} tone="neutral" />
             <PrimaryButton
-              disabled={complete.isPending || detail.participants.length < 2}
+              disabled={complete.isPending || detail.participants.length < 2 || unseeded.length > 0}
               label={complete.isPending ? 'Đang ghi nhận…' : 'Ghi nhận vào sổ công bằng'}
               onPress={() =>
                 complete.mutate(

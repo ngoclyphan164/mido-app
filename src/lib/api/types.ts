@@ -244,6 +244,63 @@ export type GroupFairness = {
   }[];
 };
 
+// ── GET /v1/invites/:code ────────────────────────────────────────────────────
+
+/**
+ * Cố tình nghèo nàn: đây là route công khai duy nhất ngoài `/health`, và màn
+ * join chỉ cần đủ để nói "Bạn được mời vào nhóm X · 4 thành viên".
+ */
+export type InvitePreview = {
+  groupName: string;
+  memberCount: number;
+  inviteExpiresAt: string;
+};
+
+// ── /v1/profiles/me ──────────────────────────────────────────────────────────
+
+export type Profile = {
+  id: string;
+  displayName: string;
+  avatarUrl: string | null;
+  defaultTravelMode: TravelMode;
+  createdAt: string;
+  updatedAt: string;
+};
+
+/** Mọi trường đều optional, nhưng API từ chối body rỗng. `avatarUrl: null` xoá ảnh. */
+export type UpdateProfileRequest = {
+  displayName?: string;
+  avatarUrl?: string | null;
+  defaultTravelMode?: TravelMode;
+};
+
+// ── /v1/saved-locations ──────────────────────────────────────────────────────
+
+export type SavedLocation = {
+  id: string;
+  label: string;
+  location: Coordinate;
+  /** Địa chỉ đã resolve tại đúng toạ độ này; điền thẳng vào participant. */
+  address: string | null;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type CreateSavedLocationRequest = {
+  label: string;
+  lat: number;
+  lng: number;
+  address?: string;
+};
+
+/** lat và lng phải gửi cùng nhau; `address: null` xoá địa chỉ. */
+export type UpdateSavedLocationRequest = {
+  label?: string;
+  lat?: number;
+  lng?: number;
+  address?: string | null;
+};
+
 // ── Groups ───────────────────────────────────────────────────────────────────
 
 export type GroupRole = 'owner' | 'admin' | 'member';
@@ -401,9 +458,17 @@ export type HangoutDetail = Omit<HangoutSummary, 'participantCount'> & {
   } | null;
 };
 
+/**
+ * Đúng một trong hai đường vào: toạ độ thô, hoặc id của một địa điểm đã lưu —
+ * API từ chối nếu gửi cả hai hoặc không gửi cái nào. Địa điểm đã lưu mang sẵn
+ * địa chỉ nên `originAddress` được điền hộ.
+ *
+ * `travelMode` bỏ trống thì API lấy `defaultTravelMode` trong hồ sơ.
+ */
 export type UpsertParticipantRequest = {
-  lat: number;
-  lng: number;
+  lat?: number;
+  lng?: number;
+  savedLocationId?: string;
   originAddress?: string;
   travelMode?: TravelMode;
   displayName?: string;

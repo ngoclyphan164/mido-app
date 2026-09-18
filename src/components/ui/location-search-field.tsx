@@ -10,8 +10,8 @@ import { ActivityIndicator, Keyboard, Pressable, Text, TextInput, View } from 'r
 import { LabeledInput } from '@/components/ui/form';
 import { ListGroup } from '@/components/ui/list-group';
 import { MapPin } from '@/components/ui/placeholders';
-import { useSearchLocations } from '@/lib/api/queries';
-import type { Coordinate, SearchLocationPlace } from '@/lib/api/types';
+import { useSavedLocations, useSearchLocations } from '@/lib/api/queries';
+import type { Coordinate, SavedLocation, SearchLocationPlace } from '@/lib/api/types';
 import { SHADOWS } from '@/theme/tokens';
 import { FieldLabel } from '@/components/ui/typography';
 
@@ -22,6 +22,12 @@ type LocationSearchFieldProps = {
   selectedLabel?: string;
   onSelect: (place: SearchLocationPlace) => void;
   onUseCurrentLocation: () => Promise<boolean>;
+  /**
+   * Hiện địa điểm đã lưu ngay trong sheet, ở đúng chỗ dòng "nhập 2 ký tự" đang
+   * nằm. Truyền cả hai hoặc không truyền cái nào.
+   */
+  enableSaved?: boolean;
+  onSelectSaved?: (location: SavedLocation) => void;
 };
 
 /**
@@ -36,6 +42,8 @@ export function LocationSearchField({
   selectedLabel,
   onSelect,
   onUseCurrentLocation,
+  enableSaved = false,
+  onSelectSaved,
 }: LocationSearchFieldProps) {
   const sheetRef = useRef<BottomSheetMethods>(null);
   const inputRef = useRef<TextInput>(null);
@@ -45,6 +53,9 @@ export function LocationSearchField({
 
   const normalizedQuery = query.trim();
   const locationSearch = useSearchLocations(isOpen ? debouncedQuery : '', center);
+  // Chỉ đọc khi sheet mở: danh sách này không hiện ở đâu khác trong component.
+  const savedLocations = useSavedLocations(enableSaved && isOpen && Boolean(onSelectSaved));
+  const saved = savedLocations.data ?? [];
 
   useEffect(() => {
     if (!isOpen) return;
@@ -86,6 +97,11 @@ export function LocationSearchField({
 
   function selectPlace(place: SearchLocationPlace) {
     onSelect(place);
+    closeSearch();
+  }
+
+  function selectSaved(location: SavedLocation) {
+    onSelectSaved?.(location);
     closeSearch();
   }
 
@@ -197,7 +213,36 @@ export function LocationSearchField({
             keyboardShouldPersistTaps="handled"
             style={{ flex: 1 }}
           >
-            {normalizedQuery.length < 2 ? (
+            {normalizedQuery.length < 2 && saved.length > 0 ? (
+              <View className="gap-2">
+                <FieldLabel>Đã lưu</FieldLabel>
+                <ListGroup
+                  items={saved.map((location) => ({
+                    key: location.id,
+                    onPress: () => selectSaved(location),
+                    children: (
+                      <>
+                        <View className="h-8 w-8 items-center justify-center">
+                          <MapPin size={16} />
+                        </View>
+                        <View className="flex-1">
+                          <Text className="font-body-bold text-[14px] text-ink" numberOfLines={1}>
+                            {location.label}
+                          </Text>
+                          {location.address ? (
+                            <Text className="font-body text-[12px] text-ink-50" numberOfLines={2}>
+                              {location.address}
+                            </Text>
+                          ) : null}
+                        </View>
+                      </>
+                    ),
+                  }))}
+                />
+              </View>
+            ) : null}
+
+            {normalizedQuery.length < 2 && saved.length === 0 ? (
               <Text className="font-body text-[12.5px] text-ink-45">
                 Nhập ít nhất 2 ký tự để bắt đầu tìm kiếm.
               </Text>

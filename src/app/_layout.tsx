@@ -61,13 +61,38 @@ function RootNavigator({ fontsSettled }: { fontsSettled: boolean }) {
 
   return (
     <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: '#FFF8F4' } }}>
-      {/* Guards swap the whole tree, so signing out drops straight to sign-in. */}
-      <Stack.Protected guard={status === 'signed-in'}>
+      {/*
+        Guards swap the whole tree, so signing out drops straight to sign-in.
+
+        Khách đi chung guard với người đã đăng ký, vì họ là user Supabase thật và
+        mọi endpoint `/v1` đều chạy. Điều đó còn khiến lúc nâng cấp xong —
+        'guest' → 'signed-in' — cây `(app)` không bị tháo, nên người dùng không
+        bị văng ra giữa luồng đặt mật khẩu.
+      */}
+      <Stack.Protected guard={status === 'signed-in' || status === 'guest'}>
         <Stack.Screen name="(app)" />
       </Stack.Protected>
       <Stack.Protected guard={status === 'signed-out'}>
         <Stack.Screen name="(auth)" />
       </Stack.Protected>
+      {/*
+        Bốn màn dưới đây phải với tới được ở CẢ HAI trạng thái, nên chúng đứng
+        ngoài guard — và đứng cuối, để đúng một trong (app)/(auth) vẫn là màn khả
+        dụng đầu tiên khi một guard lật.
+
+        `join/[code]`: link mời đến khi chưa đăng nhập cũng phải mở được.
+        `reset-password`: link khôi phục của Supabase tạo phiên ngay giữa lúc
+        người dùng đang đứng trên màn đó — nếu nó nằm trong (auth) thì guard sẽ
+        gỡ màn xuống đúng khoảnh khắc `setSession` resolve, trước khi họ kịp gõ
+        mật khẩu mới.
+        `confirm-email`: link xác nhận email mới của khách, cùng một cái bẫy.
+        `auth-callback`: lưới an toàn cho redirect OAuth — xem `oauthRedirect`
+        trong `src/lib/links.ts`.
+      */}
+      <Stack.Screen name="join/[code]" />
+      <Stack.Screen name="reset-password" />
+      <Stack.Screen name="confirm-email" />
+      <Stack.Screen name="auth-callback" />
     </Stack>
   );
 }

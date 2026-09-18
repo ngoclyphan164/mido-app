@@ -7,6 +7,8 @@ import { OutlineButton, TextLink } from '@/components/ui/buttons';
 import { PlaceCard } from '@/components/ui/place-card';
 import { useRefreshControl } from '@/components/ui/refresh';
 import { Screen, ScreenHeader } from '@/components/ui/screen';
+import { WHEEL_MAX_SECTORS } from '@/components/ui/spin-wheel';
+import { SpinWheelDialog } from '@/components/ui/spin-wheel-dialog';
 import { EmptyState, ErrorState, LoadingState } from '@/components/ui/states';
 import { activityLabel, formatTime, formatWeekday } from '@/lib/api/present';
 import {
@@ -43,6 +45,14 @@ export default function Suggestions() {
     currentPage * SUGGESTION_PAGE_SIZE,
     (currentPage + 1) * SUGGESTION_PAGE_SIZE,
   );
+
+  /**
+   * Vòng quay lấy nhóm đầu pool chứ không lấy đúng trang đang xem: pool đã xếp
+   * hạng sẵn nên tám quán đầu là tám quán hợp nhất, mà vẫn còn đọc được tên trên
+   * múi. Đọc từ cache, không tốn thêm lần gọi API nào.
+   */
+  const [wheelOpen, setWheelOpen] = useState(false);
+  const wheelOptions = pool.slice(0, WHEEL_MAX_SECTORS);
 
   /**
    * Chỉ chạy pipeline khi API thật sự chưa có gì cho kèo này — nghĩa là phải
@@ -159,14 +169,31 @@ export default function Suggestions() {
         )}
       </ScrollView>
 
-      {pageCount > 1 ? (
-        <View className="items-center gap-1 px-5 pb-8 pt-4">
-          <TextLink label="Tìm lại lựa chọn khác" onPress={showOtherOptions} />
-          <Text className="font-body text-[11.5px] text-ink-40">
-            {`${currentPage + 1}/${pageCount} · ${pool.length} quán`}
-          </Text>
+      {wheelOptions.length > 1 || pageCount > 1 ? (
+        <View className="gap-3 px-5 pb-8 pt-4">
+          {wheelOptions.length > 1 ? (
+            <OutlineButton label="Quay số chọn giúp mình" onPress={() => setWheelOpen(true)} />
+          ) : null}
+          {pageCount > 1 ? (
+            <View className="items-center gap-1">
+              <TextLink label="Tìm lại lựa chọn khác" onPress={showOtherOptions} />
+              <Text className="font-body text-[11.5px] text-ink-40">
+                {`${currentPage + 1}/${pageCount} · ${pool.length} quán`}
+              </Text>
+            </View>
+          ) : null}
         </View>
       ) : null}
+
+      <SpinWheelDialog
+        onClose={() => setWheelOpen(false)}
+        onPick={(suggestion) => {
+          setWheelOpen(false);
+          router.push(`/hangout/${hangoutId}/place/${suggestion.suggestionId}`);
+        }}
+        options={wheelOptions}
+        visible={wheelOpen}
+      />
     </Screen>
   );
 }

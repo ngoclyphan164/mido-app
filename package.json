@@ -10,12 +10,14 @@
     "@supabase/supabase-js": "^2.109.0",
     "@tanstack/react-query": "^5.102.1",
     "expo": "~57.0.15",
+    "expo-apple-authentication": "~57.0.2",
     "expo-clipboard": "~57.0.1",
     "expo-constants": "~57.0.13",
     "expo-device": "~57.0.1",
     "expo-font": "~57.0.1",
     "expo-glass-effect": "~57.0.1",
     "expo-image": "~57.0.3",
+    "expo-image-picker": "~57.0.17",
     "expo-linear-gradient": "~57.0.1",
     "expo-linking": "~57.0.7",
     "expo-location": "~57.0.13",
@@ -24,6 +26,7 @@
     "expo-status-bar": "~57.0.1",
     "expo-symbols": "~57.0.2",
     "expo-system-ui": "~57.0.2",
+    "expo-updates": "~57.0.22",
     "expo-web-browser": "~57.0.2",
     "nativewind": "^5.0.0-preview.4",
     "react": "19.2.3",
@@ -62,7 +65,8 @@
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "submit:ios:testflight": "eas submit --platform ios --latest --profile production --wait",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "prebuild:ios": "expo prebuild --clean --platform ios"
   },
   "private": true,
   "overrides": {

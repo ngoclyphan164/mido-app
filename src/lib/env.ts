@@ -25,6 +25,19 @@ export function apiUrl(path: string) {
 }
 
 /**
+ * Origin the invite and password-reset links are written against.
+ *
+ * Chưa có Universal Link: không có `apple-app-site-association` nào được phục vụ
+ * ở đây, nên thứ thật sự mở được app vẫn là scheme `mido://`, còn giá trị này
+ * chỉ xuất hiện dưới dạng chữ đọc được. Dù vậy nó phải trỏ vào một host có thật
+ * — mặc định cũ là `mido.app`, một domain đang rao bán trên Afternic, nên người
+ * dùng bấm vào sẽ rơi vào trang bán domain.
+ */
+const rawWebOrigin = process.env.EXPO_PUBLIC_WEB_ORIGIN;
+
+export const WEB_ORIGIN = (rawWebOrigin ?? 'https://mido.linhtuti.com').replace(/\/+$/, '');
+
+/**
  * Supabase project the API validates tokens against — its JWKS is derived from
  * this URL, so the app must sign in to the *same* project as
  * `DATABASE_SUPABASE_URL` on the API side or every call returns 401.

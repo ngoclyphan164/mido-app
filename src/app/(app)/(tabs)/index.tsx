@@ -3,6 +3,7 @@ import { useRouter, type Href } from 'expo-router';
 import { Pressable, ScrollView, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import { GuestNudge } from '@/components/guest-nudge';
 import { Avatar } from '@/components/ui/avatar';
 import { ChevronRight } from '@/components/ui/icons';
 import { useRefreshControl } from '@/components/ui/refresh';
@@ -112,6 +113,8 @@ export default function Home() {
             size={40}
           />
         </View>
+
+        <GuestNudge />
 
         {groups.isError ? (
           <ErrorState error={groups.error} onRetry={groups.refetch} />

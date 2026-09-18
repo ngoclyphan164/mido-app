@@ -3,9 +3,25 @@
   "configurations": [
     {
       "name": "mido-web",
-      "runtimeExecutable": "npx",
-      "runtimeArgs": ["expo", "start", "--web", "--port", "8083"],
+      "runtimeExecutable": "bash",
+      "runtimeArgs": [
+        "-lc",
+        "source \"$NVM_DIR/nvm.sh\" 2>/dev/null || source \"$HOME/.nvm/nvm.sh\"; nvm use >/dev/null; exec npx expo start --web --port 8083"
+      ],
       "port": 8083,
+      "autoPort": false
+    },
+    {
+      "name": "mido-site",
+      "runtimeExecutable": "python3",
+      "runtimeArgs": [
+        "-m",
+        "http.server",
+        "8090",
+        "--directory",
+        "site"
+      ],
+      "port": 8090,
       "autoPort": false
     }
   ]
